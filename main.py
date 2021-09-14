@@ -13,7 +13,7 @@ from input import prepare_observation
 
 def dilate(img, width):
     kernel = np.ones((width, width), np.uint8)
-    return cv2.dilate(img, kernel, iterations=1)
+    return cv2.dilate(img, kernel, iterations=3)
 
 
 if __name__ == '__main__':
@@ -28,12 +28,12 @@ if __name__ == '__main__':
     img = prepare_observation(rendered)
     # cv2.imshow('nic', img)
     # cv2.waitKey()
-    img = dilate(img, 4)
+    img = dilate(img, 3)
     cv2.imshow('nic', img)
     cv2.waitKey()
     particle = Particle([0, -20], 0, translation([0, 0, 10]).dot(rotation_x(- math.pi / 2 - 0.5)))
 
-    particle_count = 200
+    particle_count = 1000
     pf = ParticleFilter(particle, pitch, particle_count)
     X = (np.random.rand(particle_count) - 0.5) * 60
     Y = (np.random.rand(particle_count) - 0.5) * 90

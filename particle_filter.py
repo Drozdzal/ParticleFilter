@@ -42,7 +42,7 @@ class ParticleFilter:
 
     def update_observation(self, observation: np.array, alpha=1):
         cv2.imshow('current real observation', observation)
-        matching = np.bitwise_and(self.theoretical_observations, observation)
+        matching = np.multiply(self.theoretical_observations, observation)
         probabilities = np.sum(np.sum(matching * matching, 2), 1)
         probabilities = np.sum(np.abs(probabilities ** 2), axis=-1)**(1/2)
         probabilities = probabilities / sum(probabilities)

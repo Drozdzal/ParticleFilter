@@ -41,7 +41,7 @@ ACTIONS = {
     'noop': ActionParams(translation_mean=[0, 0],
                          translation_deviation=[1, 1],
                          rotation_mean=0,
-                         rotation_deviation=0.5)
+                         rotation_deviation=0.1)
 
 }
 
