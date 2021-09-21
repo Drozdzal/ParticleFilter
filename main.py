@@ -11,9 +11,13 @@ from shape import pitch_factory
 from transformations import rotation_x, translation
 from input import prepare_observation
 
+
 def dilate(img, width):
     kernel = np.ones((width, width), np.uint8)
     return cv2.dilate(img, kernel, iterations=3)
+
+def blur(img, size):
+    return cv2.GaussianBlur(img, size, cv2.BORDER_DEFAULT)
 
 
 if __name__ == '__main__':

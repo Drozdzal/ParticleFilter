@@ -23,11 +23,11 @@ class Line:
         p2 = (int(self.b[0]) + width // 2, height // 2 + int(self.b[1]))
         if dir2color:
             vector = self.b - self.a
-            direction = math.atan2(vector[0], vector[1])
+            # direction = math.atan2(vector[0], vector[1])
             # color =
             vector_length = np.linalg.norm(vector)
-            color = (int((vector[0]/vector_length + 1) * 127),
-                     int((vector[1]/vector_length + 1) * 127),
+            color = (int(abs(vector[0]/vector_length) * 255),
+                     int(abs(vector[1]/vector_length) * 255),
                      0)
         else:
             color = self.color
