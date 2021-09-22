@@ -14,6 +14,12 @@ class Shape:
         for line in self.lines:
             line.draw(img, dir2color)
 
+    def transform(self, transformation: np.array):
+        for line in self.lines:
+            line.a = transformation * line.a
+            line.b = transformation * line.b
+
+
 
 def pitch_factory(length=90, width=60, goal_width=20, goal_height=10, radius=10, samples=16) -> Shape:
     color = (255, 255, 255)
