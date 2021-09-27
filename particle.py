@@ -78,6 +78,7 @@ class Particle:
         self.position = self.get_robot_pose().dot(np.append(robot_translation, [0, 1]))[0:2]
         # global rotation matrix
         self.yaw += np.random.normal(action.rotation_mean, action.rotation_deviation)
+        self.yaw -= (self.yaw//(2*np.pi)) * (2*np.pi)
         self.update_camera()
 
     def copy(self):
@@ -94,3 +95,10 @@ class Particle:
         start = self.camera.pose[0:4, 3]
         end = self.camera.get_robot_pose().dot(np.array([0, 5, 0, 1]))
         return Shape([Line(start, end, color)])
+
+    def get_state(self):
+        return {
+            'x': self.position[0],
+            'y': self.position[1],
+            'yaw': self.yaw
+        }

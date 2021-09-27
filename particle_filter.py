@@ -22,23 +22,95 @@ class ActionParams:
         self.rotation_deviation = rotation_deviation
 
 
+class ClusterManager:
+    class DimensionConfig:
+        def __init__(self, min, max, subdivs, is_cyclic=False):
+            self.min = min
+            self.max = max
+            self.subdivs = subdivs
+            self.size = (max-min)/subdivs
+            self.is_cyclic = is_cyclic
+
+    def __init__(self):
+        self.dimensions = {}
+        self.clusters = {}
+        self.best_cluster_idx = None
+
+    def clear(self):
+        self.clusters = {}
+        self.best_cluster_idx = None
+
+    def add_dimension(self, name, min, max, subdivs, is_cyclic=False):
+        self.dimensions[name] = ClusterManager.DimensionConfig(min, max, subdivs, is_cyclic=is_cyclic)
+
+    def add_particle(self, particle: Particle):
+        indexes = {}
+        for dim_name, value in particle.get_state().items():
+            indexes[dim_name] = value//self.dimensions[dim_name].size
+        indexes = str(indexes)
+        if indexes in self.clusters.keys():
+            self.clusters[indexes].append(particle)
+        else:
+            self.clusters[indexes] = [particle]
+        if self.best_cluster_idx is None:
+            self.best_cluster_idx = indexes
+        else:
+            if len(self.clusters[indexes]) > len(self.clusters[self.best_cluster_idx]):
+                self.best_cluster_idx = indexes
+
+    def get_best_cluster(self):
+        if self.best_cluster_idx is not None:
+            return self.best_cluster_idx
+        self.best_cluster_idx = max(self.clusters.keys(), key=lambda cluster_idx: len(self.clusters[cluster_idx]))
+        return self.best_cluster_idx
+
+    def get_best_estimate(self):
+        best_cluster = self.clusters[self.get_best_cluster()]
+        mean_state = {}
+        for particle in best_cluster:
+            for dim_name, value in particle.get_state().items():
+                if dim_name not in mean_state:
+                    mean_state[dim_name] = value/len(best_cluster)
+                else:
+                    mean_state[dim_name] += value/len(best_cluster)
+        mean_state['particles in cluster'] = len(best_cluster)
+        return mean_state
+    # def iterative_densest(self):
+    #     best_idx = eval(self.get_best_cluster())
+    #     surrounding_indexes = {}
+    #     for dim_name, idx in best_idx.items():
+    #         surrounding_indexes[dim_name] =
+
+
+
+
 class ParticleFilter:
     def __init__(self,
                  starting_particle: Particle,
                  environment: Shape,
                  particle_count: int = 1000,
-                 render_resolution=(200, 200)):
+                 render_resolution=(200, 200)
+                 ):
         self.environment = environment
         self.particle_count = particle_count
         self.particles = [starting_particle.copy() for i in range(particle_count)]
         self.theoretical_observations = np.zeros((particle_count, render_resolution[0], render_resolution[1], 3), dtype=np.uint8)
         self.best_particle = None
+        self.cluster_manager = ClusterManager()
+
+    def update_clusters(self):
+        self.cluster_manager.clear()
+        for particle in self.particles:
+            self.cluster_manager.add_particle(particle)
 
     def update_state(self, action: str):
         self.theoretical_observations *= 0
+        self.cluster_manager.clear()
         for idx, particle in enumerate(self.particles):
             particle.update(action)
+            self.cluster_manager.add_particle(particle)
             particle.camera.render(self.environment).draw(self.theoretical_observations[idx, :, :], dir2color=True)
+        print(self.cluster_manager.get_best_estimate())
 
     def update_observation(self, observation: np.array, alpha=1):
         cv2.imshow('current real observation', observation)

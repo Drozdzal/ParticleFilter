@@ -16,6 +16,7 @@ def dilate(img, width):
     kernel = np.ones((width, width), np.uint8)
     return cv2.dilate(img, kernel, iterations=3)
 
+
 def blur(img, size):
     return cv2.GaussianBlur(img, size, cv2.BORDER_DEFAULT)
 
@@ -42,6 +43,9 @@ if __name__ == '__main__':
 
     particle_count = 1000
     pf = ParticleFilter(particle, pitch, particle_count)
+    pf.cluster_manager.add_dimension('x', min=-30, max=30, subdivs=30)
+    pf.cluster_manager.add_dimension('y', min=-45, max=45, subdivs=45)
+    pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
     X = (np.random.rand(particle_count) - 0.5) * 60
     Y = (np.random.rand(particle_count) - 0.5) * 90
     yaws = (np.random.rand(particle_count) - 0.5) * 2 * math.pi
