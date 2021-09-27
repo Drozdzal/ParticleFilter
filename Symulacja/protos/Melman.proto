@@ -1,0 +1,1741 @@
+#VRML_SIM R2021a utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the Melman
+# Extracted from: Melman.urdf
+
+PROTO Melman [
+  field  SFVec3f     translation        0 0 0
+  field  SFRotation  rotation           0 1 0 0
+  field  SFString    name               "blue team 1"  # Is `Robot.name`.
+  field  SFString    controller         "void"    # Is `Robot.controller`.
+  field  MFString    controllerArgs     []        # Is `Robot.controllerArgs`.
+  field  SFString    customData         ""        # Is `Robot.customData`.
+  field  SFBool      supervisor         FALSE     # Is `Robot.supervisor`.
+  field  SFBool      synchronization    TRUE      # Is `Robot.synchronization`.
+  field  SFBool      selfCollision      TRUE     # Is `Robot.selfCollision`.
+  field  SFFloat     MX28-torque     2.5
+  field  SFFloat     MX28-vel        5.76
+  field  SFFloat     MX28-damping    0.3
+  field  SFFloat     MX28-static     0.83
+  field  SFFloat     MX64-torque     6.0
+  field  SFFloat     MX64-vel        6.6
+  field  SFFloat     MX64-damping    0.66
+  field  SFFloat     MX64-static     1.42
+  field  SFFloat     mx-resolution 	 0.0015
+]
+{
+  %{	
+	local mx28_torque = 3.1
+	local mx28_velocity = 7.02
+	local mx28_damping = 0.31
+	local mx28_friction = 1.03
+	local mx64_torque = 7.30
+	local mx64_velocity = 8.17
+	local mx64_damping = 0.65
+	local mx64_friction = 1.73
+	local mx_resolution = 0.0015
+	local backlash = 0.01
+	local gearMass = 0.01
+	 
+	
+  }%
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+	
+	
+	
+	%{
+      if fields.name.value ~= '' then
+        -- name is supposed to be something like "red player 2" or "blue player 1"
+        words = {}
+        for word in fields.name.value:gmatch("%w+") do table.insert(words, word) end
+        color = words[1]
+        number = words[3]
+    }%
+    %{
+      end
+    }%
+	
+    children [
+	Accelerometer {
+  	lookupTable [ ]
+	xAxis       TRUE
+  	zAxis       TRUE 
+  	yAxis       TRUE 
+  	resolution  0.00006    
+	name        "accelerometer"  
+	}
+	  
+	  DEF black PBRAppearance{
+		 baseColor 0 0 0
+		 transparency 0.000000
+         roughness 1.000000
+         metalness 0
+         emissiveColor 0.000000 0.000000 0.000000
+	  }
+	  DEF color_marking PBRAppearance {
+          %{ if color == "red" then }%
+      		baseColor 1 0 0
+    	  %{ elseif color == "blue" then }%
+      		baseColor 0 0 1
+          %{ else }%
+      		baseColor 0.5 0.5 0.5
+          %{ end }%
+          transparency 0.000000
+          roughness 1.000000
+          metalness 0
+          emissiveColor 0.000000 0.000000 0.000000
+        }
+		
+	  Transform{
+			translation 0.032 0.0 -0.025
+			rotation 1 0 0 1.5708
+			children[
+				Shape {
+				appearance PBRAppearance {
+					baseColorMap ImageTexture {
+						%{ if number == "1" then }%
+							url ["textures/1.png"]
+						%{ elseif number == "2" then }%
+							url ["textures/2.png"]
+						%{ elseif number == "3" then }%
+							url ["textures/3.png"]
+						%{ elseif number == "4" then }%
+							url ["textures/4.png"]	
+						%{ else }%
+							url ["textures/err.png"]
+						%{ end }%
+					filtering 0
+					}
+					roughness 1
+					metalness 0
+
+				}
+				geometry Box{
+					size 0.0000000001 0.1 0.1
+				}
+			}
+			]
+	    }	
+		
+      Shape {
+        appearance USE color_marking
+        geometry  Mesh {
+          url["STLe/Trunk.stl"]
+        }
+      }
+      HingeJointWithBacklash {
+        jointParameters HingeJointParameters {
+          axis 0.000000 0.000000 1.000000
+          anchor 0.000000 -0.040000 -0.150065
+          dampingConstant %{= mx64_damping}%
+          staticFriction %{= mx64_friction}%
+        }
+		backlash %{= backlash}%
+		gearMass %{= gearMass}%
+        device [
+          RotationalMotor {
+            name "Right-Trunk-z"
+            maxVelocity %{= mx64_velocity}%
+            minPosition -3.141592741
+            maxPosition 3.141592741
+            maxTorque %{= mx64_torque}%
+          }
+          PositionSensor {
+            name "Right-Trunk-z-sensor"
+			resolution %{= mx_resolution}%
+          }
+        ]
+        endPoint Solid {
+          translation 0.000000 -0.040000 -0.150065
+          rotation 0.000000 1.000000 0.000000 0.000000
+          children [
+            Shape {
+              appearance USE black
+              geometry Mesh {
+                url["STLe/Right-HipMount.stl"]
+              }
+            }
+            HingeJointWithBacklash {
+              jointParameters HingeJointParameters {
+                axis 1.000000 0.000000 0.000000
+                anchor 0.000000 0.000000 0.000000
+                dampingConstant %{= mx64_damping}%
+                staticFriction %{= mx64_friction}%
+              }
+			  backlash %{= backlash}%
+			  gearMass %{= gearMass}%
+              device [
+                RotationalMotor {
+                  name "Right-Trunk-x [hip]"
+                  maxVelocity %{= mx64_velocity}%
+                  minPosition -3.141592741
+                  maxPosition 3.141592741
+                  maxTorque %{= mx64_torque}%
+                }
+                PositionSensor {
+                  name "Right-Trunk-x-sensor"
+				  resolution %{= mx_resolution}%
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Shape {
+                    appearance USE black
+                    geometry Mesh {
+                      url["STLe/Right-Hip.stl"]
+                    }
+                  }
+                  HingeJointWithBacklash {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 1.000000 0.000000
+                      anchor 0.000000 0.000000 0.000000
+                      dampingConstant %{= mx64_damping}%
+                      staticFriction %{= mx64_friction}%
+                    }
+					backlash %{= backlash}%
+					gearMass %{= gearMass}%
+                    device [
+                      RotationalMotor {
+                        name "Right-Trunk-y"
+                        maxVelocity %{= mx64_velocity}%
+                        minPosition -3.141592741
+                        maxPosition 3.141592741
+                        maxTorque %{= mx64_torque}%
+                      }
+                      PositionSensor {
+                        name "Right-Trunk-y-sensor"
+						resolution %{= mx_resolution}%
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.000000 0.000000 0.000000
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Shape {
+                          appearance USE color_marking
+                          geometry Mesh {
+                            url["STLe/Right-Thigh.stl"]
+                          }
+                        }
+                        HingeJointWithBacklash {
+                          jointParameters HingeJointParameters {
+                            axis 0.000000 1.000000 0.000000
+                            anchor 0.000000 0.000000 -0.128000
+                            dampingConstant %{= mx64_damping}%
+                            staticFriction %{= mx64_friction}%
+                          }
+						  backlash %{= backlash}%
+						  gearMass %{= gearMass}%
+                          device [
+                            RotationalMotor {
+                              name "Right-Shank-y"
+                              maxVelocity %{= mx64_velocity}%
+                              minPosition -3.141592741
+                              maxPosition 3.141592741
+                              maxTorque %{= mx64_torque}%
+                            }
+                            PositionSensor {
+                              name "Right-Shank-y-sensor"
+							  resolution %{= mx_resolution}%
+                            }
+                          ]
+                          endPoint Solid {
+                            translation 0.000000 0.000000 -0.128000
+                            rotation 0.000000 1.000000 0.000000 0.000000
+                            children [
+                              Shape {
+                                appearance USE color_marking
+                                geometry Mesh {
+                                  url["STLe/Right-Shank.stl"]
+                                }
+                              }
+                              HingeJointWithBacklash {
+                                jointParameters HingeJointParameters {
+                                  axis 0.000000 1.000000 0.000000
+                                  anchor 0.000000 0.000000 -0.128000
+                                  dampingConstant %{= mx64_damping}%
+                                  staticFriction %{= mx64_friction}%
+                                }
+								backlash %{= backlash}%
+								gearMass %{= gearMass}%
+                                device [
+                                  RotationalMotor {
+                                    name "Right-Foot-y"
+                                    maxVelocity %{= mx64_velocity}%
+                                    minPosition -3.141592741
+                                    maxPosition 3.141592741
+                                    maxTorque %{= mx64_torque}%
+                                  }
+                                  PositionSensor {
+                                    name "Right-Foot-y-sensor"
+									resolution %{= mx_resolution}%
+                                  }
+                                ]
+                                endPoint Solid {
+                                  translation 0.000000 0.000000 -0.128000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Shape {
+                                      appearance USE black
+                                      geometry Mesh {
+                                        url["STLe/Left-Ankle.stl"]
+                                      }
+                                    }
+                                    HingeJointWithBacklash {
+                                      jointParameters HingeJointParameters {
+                                        axis 1.000000 0.000000 0.000000
+                                        anchor 0.000000 0.000000 0.000000
+                                        dampingConstant %{= mx64_damping}%
+                                        staticFriction %{= mx64_friction}%
+                                      }
+									  backlash %{= backlash}%
+									  gearMass %{= gearMass}%
+                                      device [
+                                        RotationalMotor {
+                                          name "Right-Foot-x"
+                                          maxVelocity %{= mx64_velocity}%
+                                          minPosition -3.141592741
+                                          maxPosition 3.141592741
+                                          maxTorque %{= mx64_torque}%
+                                        }
+                                        PositionSensor {
+                                          name "Right-Foot-x-sensor"
+										  resolution %{= mx_resolution}%
+                                        }
+                                      ]
+                                      endPoint Solid {
+                                        translation 0.000000 0.000000 0.000000
+                                        rotation 0.000000 1.000000 0.000000 0.000000
+                                        children [
+                                          Shape {
+                                            appearance USE black
+                                            geometry Mesh {
+                                              url["STLe/Right-Foot.stl"]
+                                            }
+                                          }
+                                        ]
+                                        name "Right-Foot [foot]"
+                                        boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0 -0.033
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.127 0.071 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.031 0 -0.014
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.0228
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.069 0 -0.014
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.028
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.0671 -0.0001 -0.032
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.006 0.028 0.008
+                        }
+                      ]
+                    }
+				  ]
+          }
+                                        physics Physics {
+                                          density -1
+                                          mass 0.088000
+                                          centerOfMass [ -0.004442 0.000000 -0.030980 ]
+                                          inertiaMatrix [
+                                            4.290200e-05 1.381020e-04 1.609020e-04
+                                            0.000000e+00 -6.470000e-07 0.000000e+00
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                  name "Right-Ankle"
+				  boundingObject Group {
+                		  	children [
+                    Transform {
+                      translation -0.0225 0.0 0.0168
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.075 0.04 0.063
+                        }
+                      ]
+                    }
+				  ]
+                                  }
+                                  physics Physics {
+                                    density -1
+                                    mass 0.351000
+                                    centerOfMass [ -0.021137 0.000170 0.014739 ]
+                                    inertiaMatrix [
+                                      1.358230e-04 3.175240e-04 2.666630e-04
+                                      -1.265000e-06 4.250000e-06 2.029000e-06
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                            name "Right-Shank"
+		 	    boundingObject Group {
+                	          	children [
+                    Transform {
+                      translation 0.02 0.0 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.05 0.058
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.017 0.0245 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0065 0.002 0.058
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.017 -0.0245 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0065 0.002 0.058
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0245 -0.064
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.027 0.002 0.128
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 -0.0245 -0.064
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.027 0.002 0.128
+                        }
+                      ]
+                    }
+				  ]
+                                  }
+                            physics Physics {
+                              density -1
+                              mass 0.059000
+                              centerOfMass [ 0.004836 -0.002813 -0.060226 ]
+                              inertiaMatrix [
+                                1.287480e-04 1.061030e-04 3.709700e-05
+                                -8.040000e-07 -3.208000e-06 -6.270000e-07
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                      name "Right-Thigh"
+		      boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0 -0.111
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.04 0.04 0.06
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.02 0 -0.083
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.012 0.051 0.0645
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0245 -0.042
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.028 0.002 0.085
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 -0.0245 -0.042
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.028 0.002 0.085
+                        }
+                      ]
+                    }
+				  ]
+          }
+                      physics Physics {
+                        density -1
+                        mass 0.220000
+                        centerOfMass [ 0.002335 0.000650 -0.099757 ]
+                        inertiaMatrix [
+                          2.756610e-04 2.502060e-04 7.757000e-05
+                          3.340000e-07 -7.878000e-06 -5.455000e-06
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "Right-Hip"
+		boundingObject Group {
+          	children [
+                    Transform {
+                      translation -0.02 0 -0.017
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.081 0.041 0.062
+                        }
+                      ]
+                    }
+
+				  ]
+          }
+                physics Physics {
+                  density -1
+                  mass 0.351000
+                  centerOfMass [ -0.021137 0.000170 0.014739 ]
+                  inertiaMatrix [
+                    1.358230e-04 3.175240e-04 2.666630e-04
+                    -1.265000e-06 4.250000e-06 2.029000e-06
+                  ]
+                }
+              }
+            }
+          ]
+          name "Right-HipMount"
+	  boundingObject Group {
+          	children [
+                    Transform {
+                      translation -0.019 0 0.031
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.101 0.035 0.008
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.031 0 0.008
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.04
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.069 0.0 0.008
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.04
+                        }
+                      ]
+                    }
+				  ]
+          }
+          physics Physics {
+            density -1
+            mass 0.038000
+            centerOfMass [ -0.014306 0.000000 0.024769 ]
+            inertiaMatrix [
+              1.174300e-05 6.129800e-05 5.873400e-05
+              0.000000e+00 4.429000e-06 0.000000e+00
+            ]
+          }
+        }
+      }
+      HingeJointWithBacklash {
+        jointParameters HingeJointParameters {
+          axis 0.000000 0.000000 1.000000
+          anchor 0.000000 0.040000 -0.150065
+          dampingConstant %{= mx64_damping}%
+          staticFriction %{= mx64_friction}%
+        }
+		backlash %{= backlash}%
+		gearMass %{= gearMass}%
+        device [
+          RotationalMotor {
+            name "Left-Trunk-z"
+            maxVelocity %{= mx64_velocity}%
+            minPosition -3.141592741
+            maxPosition 3.141592741
+            maxTorque %{= mx64_torque}%
+          }
+          PositionSensor {
+            name "Left-Trunk-z-sensor"
+			resolution %{= mx_resolution}%
+          }
+        ]
+        endPoint Solid {
+          translation 0.000000 0.040000 -0.150065
+          rotation 0.000000 1.000000 0.000000 0.000000
+          children [
+            Shape {
+              appearance USE black
+              geometry Mesh {
+                url["STLe/Left-HipMount.stl"]
+              }
+            }
+            HingeJointWithBacklash {
+              jointParameters HingeJointParameters {
+                axis 1.000000 0.000000 0.000000
+                anchor 0.000000 0.000000 0.000000
+                dampingConstant %{= mx64_damping}%
+                staticFriction %{= mx64_friction}%
+              }
+			  backlash %{= backlash}%
+			  gearMass %{= gearMass}%
+              device [
+                RotationalMotor {
+                  name "Left-Trunk-x [hip]"
+                  maxVelocity %{= mx64_velocity}%
+                  minPosition -3.141592741
+                  maxPosition 3.141592741
+                  maxTorque %{= mx64_torque}%
+                }
+                PositionSensor {
+                  name "Left-Trunk-x-sensor"
+				  resolution %{= mx_resolution}%
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Shape {
+                    appearance USE black
+                    geometry Mesh {
+                      url["STLe/Left-Hip.stl"]
+                    }
+                  }
+                  HingeJointWithBacklash {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 1.000000 0.000000
+                      anchor 0.000000 0.000000 0.000000
+                      dampingConstant %{= mx64_damping}%
+                      staticFriction %{= mx64_friction}%
+                    }
+					backlash %{= backlash}%
+					gearMass %{= gearMass}%
+                    device [
+                      RotationalMotor {
+                        name "Left-Trunk-y"
+                        maxVelocity %{= mx64_velocity}%
+                        minPosition -3.141592741
+                        maxPosition 3.141592741
+                        maxTorque %{= mx64_torque}%
+                      }
+                      PositionSensor {
+                        name "Left-Trunk-y-sensor"
+						resolution %{= mx_resolution}%
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.000000 0.000000 0.000000
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Shape {
+                          appearance USE color_marking
+                          geometry Mesh {
+                            url["STLe/Left-Thigh.stl"]
+                          }
+                        }
+                        HingeJointWithBacklash {
+                          jointParameters HingeJointParameters {
+                            axis 0.000000 1.000000 0.000000
+                            anchor 0.000000 0.000000 -0.128000
+                            dampingConstant %{= mx64_damping}%
+                            staticFriction %{= mx64_friction}%
+                          }
+						  backlash %{= backlash}%
+						  gearMass %{= gearMass}%
+                          device [
+                            RotationalMotor {
+                              name "Left-Shank-y"
+                              maxVelocity %{= mx64_velocity}%
+                              minPosition -3.141592741
+                              maxPosition 3.141592741
+                              maxTorque %{= mx64_torque}%
+                            }
+                            PositionSensor {
+                              name "Left-Shank-y-sensor"
+							  resolution %{= mx_resolution}%
+                            }
+                          ]
+                          endPoint Solid {
+                            translation 0.000000 0.000000 -0.128000
+                            rotation 0.000000 1.000000 0.000000 0.000000
+                            children [
+                              Shape {
+                                appearance USE color_marking
+                                geometry Mesh {
+                                  url["STLe/Left-Shank.stl"]
+                                }
+                              }
+                              HingeJointWithBacklash {
+                                jointParameters HingeJointParameters {
+                                  axis 0.000000 1.000000 0.000000
+                                  anchor 0.000000 0.000000 -0.128000
+                                  dampingConstant %{= mx64_damping}%
+                                  staticFriction %{= mx64_friction}%
+                                }
+								backlash %{= backlash}%
+								gearMass %{= gearMass}%
+                                device [
+                                  RotationalMotor {
+                                    name "Left-Foot-y"
+                                    maxVelocity %{= mx64_velocity}%
+                                    minPosition -3.141592741
+                                    maxPosition 3.141592741
+                                    maxTorque %{= mx64_torque}%
+                                  }
+                                  PositionSensor {
+                                    name "Left-Foot-y-sensor"
+									resolution %{= mx_resolution}%
+                                  }
+                                ]
+                                endPoint Solid {
+                                  translation 0.000000 0.000000 -0.128000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Shape {
+                                      appearance USE black
+                                      geometry Mesh {
+                                        url["STLe/Left-Ankle.stl"]
+                                      }
+                                    }
+                                    HingeJointWithBacklash {
+                                      jointParameters HingeJointParameters {
+                                        axis 1.000000 0.000000 0.000000
+                                        anchor 0.000000 0.000000 0.000000
+                                        dampingConstant %{= mx64_damping}%
+                                        staticFriction %{= mx64_friction}%
+                                      }
+									  backlash %{= backlash}%
+									  gearMass %{= gearMass}%
+                                      device [
+                                        RotationalMotor {
+                                          name "Left-Foot-x"
+                                          maxVelocity %{= mx64_velocity}%
+                                          minPosition -3.141592741
+                                          maxPosition 3.141592741
+                                          maxTorque %{= mx64_torque}%
+                                        }
+                                        PositionSensor {
+                                          name "Left-Foot-x-sensor"
+										  resolution %{= mx_resolution}%
+                                        }
+                                      ]
+                                      endPoint Solid {
+                                        translation 0.000000 0.000000 0.000000
+                                        rotation 0.000000 1.000000 0.000000 0.000000
+                                        children [
+                                          Shape {
+                                            appearance USE black
+                                            geometry Mesh {
+                                              url["STLe/Left-Foot.stl"]
+                                            }
+                                          }
+                                        ]
+                                        name "Left-Foot [foot]"
+                                        boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0 -0.033
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.127 0.071 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.031 0 -0.014
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.0228
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.069 0 -0.014
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.028
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.0671 -0.0001 -0.032
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.006 0.028 0.008
+                        }
+                      ]
+                    }
+				  ]
+          }
+                                        physics Physics {
+                                          density -1
+                                          mass 0.088000
+                                          centerOfMass [ -0.004442 0.000000 -0.030980 ]
+                                          inertiaMatrix [
+                                            4.290200e-05 1.381020e-04 1.609020e-04
+                                            0.000000e+00 -6.470000e-07 0.000000e+00
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                  name "Left-Ankle"
+				  boundingObject Group {
+                	          	children [
+                    Transform {
+                      translation -0.0225 0.0 0.0168
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.075 0.04 0.063
+                        }
+                      ]
+                    }
+				  ]
+                                  }
+                                  physics Physics {
+                                    density -1
+                                    mass 0.351000
+                                    centerOfMass [ -0.021137 0.000170 0.014739 ]
+                                    inertiaMatrix [
+                                      1.358230e-04 3.175240e-04 2.666630e-04
+                                      -1.265000e-06 4.250000e-06 2.029000e-06
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                            name "Left-Shank"
+		            boundingObject Group {
+                	          	children [
+                    Transform {
+                      translation 0.02 0.0 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.05 0.058
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.017 0.0245 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0065 0.002 0.058
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.017 -0.0245 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0065 0.002 0.058
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0245 -0.064
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.027 0.002 0.128
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 -0.0245 -0.064
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.027 0.002 0.128
+                        }
+                      ]
+                    }
+				  ]
+                                  }
+                            physics Physics {
+                              density -1
+                              mass 0.059000
+                              centerOfMass [ 0.004836 -0.002813 -0.060226 ]
+                              inertiaMatrix [
+                                1.287480e-04 1.061030e-04 3.709700e-05
+                                -8.040000e-07 -3.208000e-06 -6.270000e-07
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                      name "Left-Thigh"
+		      boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0 -0.111
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.04 0.04 0.06
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.02 0 -0.083
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.012 0.051 0.0645
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0245 -0.042
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.028 0.002 0.085
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 -0.0245 -0.042
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.028 0.002 0.085
+                        }
+                      ]
+                    }
+				  ]
+          }
+                      physics Physics {
+                        density -1
+                        mass 0.220000
+                        centerOfMass [ 0.002335 0.000650 -0.099757 ]
+                        inertiaMatrix [
+                          2.756610e-04 2.502060e-04 7.757000e-05
+                          3.340000e-07 -7.878000e-06 -5.455000e-06
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "Left-Hip"
+		boundingObject Group {
+          	children [
+                    Transform {
+                      translation -0.02 0 -0.017
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.081 0.041 0.062
+                        }
+                      ]
+                    }
+
+				  ]
+          }
+                physics Physics {
+                  density -1
+                  mass 0.351000
+                  centerOfMass [ -0.021137 0.000170 0.014739 ]
+                  inertiaMatrix [
+                    1.358230e-04 3.175240e-04 2.666630e-04
+                    -1.265000e-06 4.250000e-06 2.029000e-06
+                  ]
+                }
+              }
+            }
+          ]
+          name "Left-HipMount"
+	  boundingObject Group {
+          	children [
+                    Transform {
+                      translation -0.019 0 0.031
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.101 0.035 0.008
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.031 0 0.008
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.04
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.069 0.0 0.008
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.002 0.028 0.04
+                        }
+                      ]
+                    }
+				  ]
+          }
+          physics Physics {
+            density -1
+            mass 0.038000
+            centerOfMass [ -0.014306 0.000000 0.024769 ]
+            inertiaMatrix [
+              1.174300e-05 6.129800e-05 5.873400e-05
+              0.000000e+00 4.429000e-06 0.000000e+00
+            ]
+          }
+        }
+      }
+      HingeJointWithBacklash {
+        jointParameters HingeJointParameters {
+          axis 0.000000 1.000000 0.000000
+          anchor 0.000000 -0.088659 0.000000
+          dampingConstant %{= mx28_damping}%
+          staticFriction %{= mx28_friction}%
+        }
+		backlash %{= backlash}%
+		gearMass %{= gearMass}%
+        device [
+          RotationalMotor {
+            name "Right-Arm-y [shoulder]"
+            maxVelocity %{= mx28_velocity}%
+            minPosition -3.141592741
+            maxPosition 3.141592741
+            maxTorque %{= mx28_torque}%
+          }
+          PositionSensor {
+            name "Right-Arm-y-sensor"
+			resolution %{= mx_resolution}%
+          }
+        ]
+        endPoint Solid {
+          translation 0.000000 -0.088659 0.000000
+          rotation 0.000000 1.000000 0.000000 0.000000
+          children [
+            Shape {
+              appearance USE black
+              geometry Mesh {
+                url["STLe/Right-ArmMounting.stl"]
+              }
+            }
+            HingeJointWithBacklash {
+              jointParameters HingeJointParameters {
+                axis 1.000000 0.000000 0.000000
+                anchor 0.000000 0.000000 0.000000
+                dampingConstant %{= mx28_damping}%
+                staticFriction %{= mx28_friction}%
+              }
+			  backlash %{= backlash}%
+			  gearMass %{= gearMass}%
+              device [
+                RotationalMotor {
+                  name "Right-Arm-x"
+                  maxVelocity %{= mx28_velocity}%
+                  minPosition -3.141592741
+                  maxPosition 3.141592741
+                  maxTorque %{= mx28_torque}%
+                }
+                PositionSensor {
+                  name "Right-Arm-x-sensor"
+				  resolution %{= mx_resolution}%
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Shape {
+                    appearance USE color_marking
+                    geometry Mesh {
+                      url["STLe/Right-Arm.stl"]
+                    }
+                  }
+                  HingeJointWithBacklash {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 1.000000 0.000000
+                      anchor 0.000000 0.000000 -0.098600
+                      dampingConstant %{= mx28_damping}%
+                      staticFriction %{= mx28_friction}%
+                    }
+					backlash %{= backlash}%
+					gearMass %{= gearMass}%
+                    device [
+                      RotationalMotor {
+                        name "Right-Forearm-y"
+                        maxVelocity %{= mx28_velocity}%
+                        minPosition -3.141592741
+                        maxPosition 3.141592741
+                        maxTorque %{= mx28_torque}%
+                      }
+                      PositionSensor {
+                        name "Right-Forearm-y-sensor"
+						resolution %{= mx_resolution}%
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.000000 0.000000 -0.098600
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Shape {
+                          appearance USE black
+                          geometry Mesh {
+                            url["STLe/Right_Forearm.stl"]
+                          }
+                        }
+                      ]
+                      name "Right-Forearm [arm]"
+		      boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0.00707 -0.041
+                      rotation 1.000000 0.000000 0.000000 0.785
+                      children [
+                        Box {
+                           size 0.025 0.032 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 -0.00707 -0.041
+                      rotation 1.000000 0.000000 0.000000 -0.785
+                      children [
+                        Box {
+                           size 0.025 0.032 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 -0.0212 -0.0145
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.022 0.0016 0.034
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0212 -0.0145
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.022 0.0016 0.034
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0 -0.159
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Cylinder {
+                           height 0.022
+						   radius 0.022
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0 -0.112
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.044 0.022 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 0.0 -0.071
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.028 0.022 0.08
+                        }
+                      ]
+                    }
+				  ]
+          }
+                      physics Physics {
+                        density -1
+                        mass 0.092000
+                        centerOfMass [ 0.000039 -0.000155 -0.055716 ]
+                        inertiaMatrix [
+                          4.188900e-05 3.499300e-05 1.846000e-05
+                          -9.000000e-09 -4.900000e-08 2.180000e-07
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "Right-Arm [arm]"
+		boundingObject Group {
+                	          	children [
+                    Transform {
+                      translation 0 0.0 -0.049
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0362 0.035 0.123
+                        }
+                      ]
+                    }
+				  ]
+                                  }
+                physics Physics {
+                  density -1
+                  mass 0.165000
+                  centerOfMass [ 0.000152 -0.000087 -0.049855 ]
+                  inertiaMatrix [
+                    2.697720e-04 2.691380e-04 2.983700e-05
+                    -2.000000e-08 -1.454000e-06 -2.690000e-07
+                  ]
+                }
+              }
+            }
+          ]
+          name "Right-ArmMounting [arm]"
+	  boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0.0275 0
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0439 0.0045 0.026
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0212 0.012 0
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0015 0.029 0.022
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.0211 0.012 0
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0015 0.029 0.022
+                        }
+                      ]
+                    }
+				  ]
+          }
+          physics Physics {
+            density -1
+            mass 0.011000
+            centerOfMass [ -0.003335 0.017703 0.000000 ]
+            inertiaMatrix [
+              2.246000e-06 3.894000e-06 4.859000e-06
+              -6.370000e-07 0.000000e+00 0.000000e+00
+            ]
+          }
+        }
+      }
+      HingeJointWithBacklash {
+        jointParameters HingeJointParameters {
+          axis 0.000000 1.000000 0.000000
+          anchor 0.000000 0.088341 0.000000
+          dampingConstant %{= mx28_damping}%
+          staticFriction %{= mx28_friction}%
+        }
+		backlash %{= backlash}%
+		gearMass %{= gearMass}%
+        device [
+          RotationalMotor {
+            name "Left-Arm-y [shoulder]"
+            maxVelocity %{= mx28_velocity}%
+            minPosition -3.141592741
+            maxPosition 3.141592741
+            maxTorque %{= mx28_torque}%
+          }
+          PositionSensor {
+            name "Left-Arm-y-sensor"
+			resolution %{= mx_resolution}%
+          }
+        ]
+        endPoint Solid {
+          translation 0.000000 0.088341 0.000000
+          rotation 0.000000 1.000000 0.000000 0.000000
+          children [
+            Shape {
+              appearance USE black
+              geometry Mesh {
+                url["STLe/Left-ArmMounting.stl"]
+              }
+            }
+            HingeJointWithBacklash {
+              jointParameters HingeJointParameters {
+                axis 1.000000 0.000000 0.000000
+                anchor 0.000000 0.000000 0.000000
+                dampingConstant %{= mx28_damping}%
+                staticFriction %{= mx28_friction}%
+              }
+			  backlash %{= backlash}%
+			  gearMass %{= gearMass}%
+              device [
+                RotationalMotor {
+                  name "Left-Arm-x"
+                  maxVelocity %{= mx28_velocity}%
+                  minPosition -3.141592741
+                  maxPosition 3.141592741
+                  maxTorque %{= mx28_torque}%
+                }
+                PositionSensor {
+                  name "Left-Arm-x-sensor"
+				  resolution %{= mx_resolution}%
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Shape {
+                    appearance USE color_marking
+                    geometry Mesh {
+                      url["STLe/Left-Arm.stl"]
+                    }
+                  }
+                  HingeJointWithBacklash {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 1.000000 0.000000
+                      anchor 0.000000 0.000000 -0.098600
+                      dampingConstant %{= mx28_damping}%
+                      staticFriction %{= mx28_friction}%
+                    }
+					backlash %{= backlash}%
+					gearMass %{= gearMass}%
+                    device [
+                      RotationalMotor {
+                        name "Left-Forearm-y"
+                        maxVelocity %{= mx28_velocity}%
+                        minPosition -3.141592741
+                        maxPosition 3.141592741
+                        maxTorque %{= mx28_torque}%
+                      }
+                      PositionSensor {
+                        name "Left-Forearm-y-sensor"
+						resolution %{= mx_resolution}%
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.000000 0.000000 -0.098600
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Shape {
+                          appearance USE black
+                          geometry Mesh {
+                            url["STLe/Right_Forearm.stl"]
+                          }
+                        }
+                      ]
+                      name "Left-Forearm [arm]"
+		      boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0.00707 -0.041
+                      rotation 1.000000 0.000000 0.000000 0.785
+                      children [
+                        Box {
+                           size 0.025 0.032 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 -0.00707 -0.041
+                      rotation 1.000000 0.000000 0.000000 -0.785
+                      children [
+                        Box {
+                           size 0.025 0.032 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 -0.0212 -0.0145
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.022 0.0016 0.034
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0212 -0.0145
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.022 0.0016 0.034
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0 -0.159
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Cylinder {
+                           height 0.022
+						   radius 0.022
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0 0.0 -0.112
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.044 0.022 0.01
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 0.0 -0.071
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.028 0.022 0.08
+                        }
+                      ]
+                    }
+				  ]
+          }
+                      physics Physics {
+                        density -1
+                        mass 0.092000
+                        centerOfMass [ 0.000039 -0.000155 -0.055716 ]
+                        inertiaMatrix [
+                          4.188900e-05 3.499300e-05 1.846000e-05
+                          -9.000000e-09 -4.900000e-08 2.180000e-07
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "Left-Arm [arm]"
+		boundingObject Group {
+                	          	children [
+                    Transform {
+                      translation 0 0.0 -0.0493
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.035 0.035 0.123
+                        }
+                      ]
+                    }
+				  ]
+                                  }
+                physics Physics {
+                  density -1
+                  mass 0.165000
+                  centerOfMass [ 0.000152 -0.000087 -0.049855 ]
+                  inertiaMatrix [
+                    2.697720e-04 2.691380e-04 2.983700e-05
+                    -2.000000e-08 -1.454000e-06 -2.690000e-07
+                  ]
+                }
+              }
+            }
+          ]
+          name "Left-ArmMounting [arm]"
+	  boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 -0.0275 0
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0439 0.0045 0.026
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0212 -0.012 0
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0015 0.029 0.022
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.0212 -0.012 0
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.0015 0.029 0.022
+                        }
+                      ]
+                    }
+				  ]
+          }
+          physics Physics {
+            density -1
+            mass 0.011000
+            centerOfMass [ -0.003335 -0.017703 0.000000 ]
+            inertiaMatrix [
+              2.246000e-06 3.894000e-06 4.859000e-06
+              6.370000e-07 0.000000e+00 0.000000e+00
+            ]
+          }
+        }
+      }
+      HingeJointWithBacklash {
+        jointParameters HingeJointParameters {
+          axis 0.000000 0.000000 1.000000
+          anchor 0.018061 0.000134 0.042500
+          dampingConstant %{= mx28_damping}%
+          staticFriction %{= mx28_friction}%
+        }
+		backlash %{= backlash}%
+		gearMass %{= gearMass}%
+        device [
+          RotationalMotor {
+            name "Head-z"
+            maxVelocity %{= mx28_velocity}%
+            minPosition -3.141592741
+            maxPosition 3.141592741
+            maxTorque %{= mx28_torque}%
+          }
+          PositionSensor {
+            name "Head-z-sensor"
+			resolution %{= mx_resolution}%
+          }
+        ]
+        endPoint Solid {
+          translation 0.018061 0.000134 0.042500
+          rotation 0.000000 1.000000 0.000000 0.000000
+          children [
+            Shape {
+              appearance USE black
+              geometry Mesh {
+                url["STLe/Head-Mounting.stl"]
+              }
+            }
+            HingeJointWithBacklash {
+              jointParameters HingeJointParameters {
+                axis 0.000000 1.000000 0.000000
+                anchor 0.000000 0.000000 0.000000
+                dampingConstant %{= mx28_damping}%
+                staticFriction %{= mx28_friction}%
+              }
+			  backlash %{= backlash}%
+			  gearMass %{= gearMass}%
+              device [
+                RotationalMotor {
+                  name "Head-y"
+                  maxVelocity %{= mx28_velocity}%
+                  minPosition -3.141592741
+                  maxPosition 3.141592741
+                  maxTorque %{= mx28_torque}%
+                }
+                PositionSensor {
+                  name "Head-y-sensor"
+				  resolution %{= mx_resolution}%
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                      DEF camera Transform {
+                    translation 0.015 0 0.02
+					rotation 0 -1 0 1.5708
+                    children [
+                      Camera {
+						rotation 0 0 -1 3.14
+                        name "camera"
+                        fieldOfView 0.56
+                        width 400
+                        height 400
+                        recognition Recognition {
+                          maxRange       15
+                          maxObjects     -1
+                          occlusion      TRUE
+                          segmentation   TRUE
+                          frameColor 1 0 0
+                          frameThickness 2
+                        }
+                      }
+                    ]
+                  }
+                  Shape {
+                    appearance USE black
+                    geometry Mesh {
+                      url["STLe/Head.stl"]
+                    }
+                  }
+                ]
+                name "Head [head]"
+		boundingObject Group {
+                	children [
+                    Transform {
+                      translation 0.0 0.0 0.016
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.034600 0.035500 0.045
+                        }
+                      ]
+                    }
+				  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.077000
+                  centerOfMass [ 0.000022 0.000280 0.011283 ]
+                  inertiaMatrix [
+                    2.203500e-05 1.824200e-05 1.364900e-05
+                    -8.000000e-09 -2.000000e-08 6.890000e-07
+                  ]
+                }
+              }
+            }
+          ]
+          name "Head-Mounting"
+          boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0.0 -0.0275
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.02500 0.04500 0.005
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 0.021 -0.0105
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.023 0.002 0.026
+                        }
+                      ]
+                    }
+					Transform {
+                      translation 0.0 -0.021 -0.0105
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.023 0.002 0.026
+                        }
+                      ]
+                    }
+				  ]
+          }
+          physics Physics {
+            density -1
+            mass 0.011000
+            centerOfMass [ 0.000000 -0.003335 -0.017703 ]
+            inertiaMatrix [
+              4.859000e-06 2.246000e-06 3.894000e-06
+              0.000000e+00 0.000000e+00 6.370000e-07
+            ]
+          }
+        }
+      }
+    ]
+    name IS name 
+    boundingObject Group {
+          	children [
+                    Transform {
+                      translation 0.0 0 -0.029
+                      rotation 0.000000 1.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.046 0.111 0.078
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.02 0 -0.091
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.065 0.12 0.041
+                        }
+                      ]
+                    }
+					Transform {
+                      translation -0.046 0 -0.015
+                      rotation 0.000000 0.000000 0.000000 0
+                      children [
+                        Box {
+                           size 0.045 0.11 0.11
+                        }
+                      ]
+                    }
+				  ]
+          }
+    physics Physics {
+      density -1
+      mass 1.103
+      centerOfMass [ -0.014062 -0.000041 -0.049512 ]
+      inertiaMatrix [
+        2.801302e-03 2.073712e-03 1.762690e-03
+        8.110000e-07 -4.819500e-04 1.76269000e-06
+      ]
+    }
+  }
+}

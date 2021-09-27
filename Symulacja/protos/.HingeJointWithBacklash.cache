@@ -1,0 +1,11 @@
+Webots Proto Cache File version 1.5
+protoFileHash: 0c7d3f009b8fac80f4a605e5d6bb9bc0
+needsRobotAncestor: 1
+baseType: HingeJoint
+slotType: 
+parameters: jointParameters,backlash,gearMass,device,outputSensor,startPoint,endPoint
+tags: 
+license:  Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+licenseUrl:  https://cyberbotics.com/webots_assets_license
+documentationUrl: 
+info: This\sextension\sof\sthe\shinge\sjoint\sallows\sto\smodel\sthe\seffect\sof\sbacklash.\n

@@ -1,0 +1,73 @@
+{
+  "name": "KNR_Melson",
+  "players": {
+    "1": {
+      "robotModelName": "Melman",
+      "dockerImg": "KNR_Melson_Melman",
+      "dockerCmd": "Melman.py",
+      "halfTimeStartingPose": {
+        "translation": [ -4, 0.409, -0.0198 ],
+        "rotation": [ 1, 0.0109, -0.00618, -1.57 ]
+      },
+      "reentryStartingPose": {
+        "translation": [ -4, 0.409, -0.0198 ],
+        "rotation": [ 1, 0.0109, -0.00618, -1.57 ]
+      },
+      "shootoutStartingPose": {
+        "translation": [ 2.98, 0.444, -0.00147 ],
+        "rotation": [ 1, 0.00884, -0.00884, -1.57 ]
+      }
+    },
+    "2": {
+      "robotModelName": "Melman",
+      "dockerImg": "KNR_Melson_Melman",
+      "dockerCmd": "Melman.py",
+      "halfTimeStartingPose": {
+        "translation": [ -1.48, 0.443, -2 ],
+        "rotation": [ 1, 0.0108, -0.0069, -1.57 ]
+      },
+      "reentryStartingPose": {
+        "translation": [ -1.48, 0.443, -2 ],
+        "rotation": [ 1, 0.0108, -0.0069, -1.57 ]
+      },
+      "shootoutStartingPose": {
+        "translation": [ 2.98, 0.444, -0.00147 ],
+        "rotation": [ 1, 0.00884, -0.00884, -1.57 ]
+      }
+    },
+    "3": {
+      "robotModelName": "Melman",
+      "dockerImg": "KNR_Melson_Melman",
+      "dockerCmd": "Melman.py",
+      "halfTimeStartingPose": {
+        "translation": [ -1.5, 0.443, 2.25 ],
+        "rotation": [ 1, 0.00881, -0.00887, -1.57 ]
+      },
+      "reentryStartingPose": {
+        "translation": [ -1.5, 0.443, 2.25 ],
+        "rotation": [ 1, 0.00881, -0.00887, -1.57 ]
+      },
+      "shootoutStartingPose": {
+        "translation": [ 2.98, 0.444, -0.00147 ],
+        "rotation": [ 1, 0.00884, -0.00884, -1.57 ]
+      }
+    },
+    "4": {
+      "robotModelName": "Melman",
+      "dockerImg": "KNR_Melson_Melman",
+      "dockerCmd": "Melman.py",
+      "halfTimeStartingPose": {
+        "translation": [ -0.726, 0.443, -0.00144 ],
+        "rotation": [ 1, 0.00884, -0.00884, -1.57 ]
+      },
+      "reentryStartingPose": {
+        "translation": [ -0.726, 0.443, -0.00144 ],
+        "rotation": [ 1, 0.00884, -0.00884, -1.57 ]
+      },
+      "shootoutStartingPose": {
+        "translation": [ 2.98, 0.444, -0.00147 ],
+        "rotation": [ 1, 0.00884, -0.00884, -1.57 ]
+      }
+    }
+  }
+}
