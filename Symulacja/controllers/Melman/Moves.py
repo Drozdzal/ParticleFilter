@@ -30,6 +30,14 @@ class Move:
             row = next(r)
             for i in range(self.Motor_num):
                 self.motor[i].setPosition(float(row[i + 1]))
+                
     def head(self, z, y):
-                self.motor[18].setPosition(z)
-                self.motor[19].setPosition(y)
+        self.motor[18].setPosition(z)
+        self.motor[19].setPosition(y)
+                
+    def count_steps(self, csv_path):
+        file = open(csv_path)
+        reader = csv.reader(file)
+        lines= len(list(reader))
+        return lines
+    
