@@ -22,16 +22,16 @@ class ActionParams:
 ACTIONS = {
     # WZGLĘDEM ROBOTA KIERUNEK DO PRZODU TO OŚ Y, BOK TO X
 
-    'forward': ActionParams(translation_mean=[0, 5],
-                            translation_deviation=[2, 2],
+    'forward': ActionParams(translation_mean=[0, 500],
+                            translation_deviation=[200, 200],
                             rotation_mean=0,
                             rotation_deviation=0.05),
-    'back': ActionParams(translation_mean=[0, -5],
-                         translation_deviation=[2, 2],
+    'back': ActionParams(translation_mean=[0, -500],
+                         translation_deviation=[200, 200],
                          rotation_mean=0,
                          rotation_deviation=0.5),
     'left': ActionParams(translation_mean=[0, 0],
-                         translation_deviation=[1, 1],
+                         translation_deviation=[100, 100],
                          rotation_mean=math.pi / 12,
                          rotation_deviation=0.5),
     'right': ActionParams(translation_mean=[0, 0],
@@ -39,7 +39,7 @@ ACTIONS = {
                           rotation_mean=-math.pi / 12,
                           rotation_deviation=0.5),
     'noop': ActionParams(translation_mean=[0, 0],
-                         translation_deviation=[1, 1],
+                         translation_deviation=[100, 100],
                          rotation_mean=0,
                          rotation_deviation=0.1)
 
@@ -59,7 +59,7 @@ class Particle:
         self.window_max = None
         self.copies = 0
 
-    def update_camera(self, f=100):
+    def update_camera(self, f=150):
         if self.camera is None:
             self.camera = Camera(f)
         self.camera.pose = self.get_robot_pose().dot(self.camera_transformation)
@@ -93,7 +93,7 @@ class Particle:
 
     def get_shape(self, color=(255, 0, 0)):
         start = self.camera.pose[0:4, 3]
-        end = self.camera.get_robot_pose().dot(np.array([0, 5, 0, 1]))
+        end = self.camera.get_robot_pose().dot(np.array([0, 500, 0, 1]))
         return Shape([Line(start, end, color)])
 
     def get_state(self):

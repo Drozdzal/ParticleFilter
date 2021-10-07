@@ -25,7 +25,7 @@ if __name__ == '__main__':
     pitch = pitch_factory()
     camera = Camera()
     camera.pose = rotation_x(- math.pi / 2 - 0.5).dot(camera.pose)
-    camera.pose = translation([0, -20, 10]).dot(camera.pose)
+    camera.pose = translation([0, -2000, 500]).dot(camera.pose)
     camera.inv_pose = np.linalg.inv(camera.pose)
     rendered = camera.render(pitch)
     img = np.zeros((200, 200, 3), dtype=np.uint8)
@@ -34,23 +34,23 @@ if __name__ == '__main__':
     # cv2.imshow('nic', img)
     # cv2.waitKey()
     # img = dilate(img, 3)
-    img = blur(img, (9,9))
+    img = blur(img, (15,15))
     img = img/img.max() * 255
     img = np.array(img, dtype=np.uint8)
-    particle = Particle([0, -20], 0, translation([0, 0, 10]).dot(rotation_x(- math.pi / 2 - 0.5)))
+    particle = Particle([0, -2000], 0, translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - 0.5)))
 
     particle_count = 1000
     pf = ParticleFilter(particle, pitch, particle_count)
-    pf.cluster_manager.add_dimension('x', min=-30, max=30, subdivs=30)
-    pf.cluster_manager.add_dimension('y', min=-45, max=45, subdivs=45)
+    pf.cluster_manager.add_dimension('x', min=-3000, max=3000, subdivs=30)
+    pf.cluster_manager.add_dimension('y', min=-4500, max=4500, subdivs=45)
     pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
     np.random.seed(0)
-    X = (np.random.rand(particle_count) - 0.5) * 60
-    Y = (np.random.rand(particle_count) - 0.5) * 90
+    X = (np.random.rand(particle_count) - 0.5) * 6000
+    Y = (np.random.rand(particle_count) - 0.5) * 9000
     yaws = (np.random.rand(particle_count) - 0.5) * 2 * math.pi
-    particles = [Particle([X[i], Y[i]], yaws[i], translation([0, 0, 10]).dot(rotation_x(- math.pi / 2 - 0.5))) for i in range(particle_count)]
+    particles = [Particle([X[i], Y[i]], yaws[i], translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - 0.5))) for i in range(particle_count)]
     pf.particles = particles
-    pf.particles[0] = Particle([0, -20], 0, translation([0, 0, 10]).dot(rotation_x(- math.pi / 2 - 0.5)))
+    pf.particles[0] = Particle([0, -20], 0, translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - 0.5)))
 
     iteration = 0
     print(pf.cluster_manager.get_cluster_count())
@@ -61,5 +61,5 @@ if __name__ == '__main__':
         pf.update_observation(img)
         iteration += 1
         if iteration > 1:
-            pf.iterative_densest()#                starting_point=np.array([0, 0, np.pi]))
+            pf.iterative_densest()
     pass

@@ -172,7 +172,7 @@ class ParticleFilter:
 
     def visualize(self):
         camera = Camera(f=500)
-        camera.pose = camera.pose.dot(translation([0, 0, 110]))
+        camera.pose = camera.pose.dot(translation([0, 0, 11000]))
         camera.pose = camera.pose.dot(rotation_x(math.pi))
         camera.inv_pose = np.linalg.inv(camera.pose)
 
