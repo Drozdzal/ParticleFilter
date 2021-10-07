@@ -37,8 +37,6 @@ if __name__ == '__main__':
     img = blur(img, (9,9))
     img = img/img.max() * 255
     img = np.array(img, dtype=np.uint8)
-    cv2.imshow('nic', img)
-    cv2.waitKey()
     particle = Particle([0, -20], 0, translation([0, 0, 10]).dot(rotation_x(- math.pi / 2 - 0.5)))
 
     particle_count = 1000
@@ -46,6 +44,7 @@ if __name__ == '__main__':
     pf.cluster_manager.add_dimension('x', min=-30, max=30, subdivs=30)
     pf.cluster_manager.add_dimension('y', min=-45, max=45, subdivs=45)
     pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
+    np.random.seed(0)
     X = (np.random.rand(particle_count) - 0.5) * 60
     Y = (np.random.rand(particle_count) - 0.5) * 90
     yaws = (np.random.rand(particle_count) - 0.5) * 2 * math.pi
@@ -53,9 +52,14 @@ if __name__ == '__main__':
     pf.particles = particles
     pf.particles[0] = Particle([0, -20], 0, translation([0, 0, 10]).dot(rotation_x(- math.pi / 2 - 0.5)))
 
+    iteration = 0
+    print(pf.cluster_manager.get_cluster_count())
     while (1):
         pf.visualize()
         pf.update_state('noop')
         pf.visualize()
         pf.update_observation(img)
+        iteration += 1
+        if iteration > 1:
+            pf.iterative_densest()#                starting_point=np.array([0, 0, np.pi]))
     pass
