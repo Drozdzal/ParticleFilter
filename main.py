@@ -39,7 +39,7 @@ if __name__ == '__main__':
     img = np.array(img, dtype=np.uint8)
     particle = Particle([0, -2000], 0, translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - 0.5)))
 
-    particle_count = 1000
+    particle_count = 200
     pf = ParticleFilter(particle, pitch, particle_count)
     pf.cluster_manager.add_dimension('x', min=-3000, max=3000, subdivs=30)
     pf.cluster_manager.add_dimension('y', min=-4500, max=4500, subdivs=45)
