@@ -43,7 +43,7 @@ class Vision:
 		imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # do hsv
 		gate_mask = cv2.inRange(imgHSV, self.lower_lines, self.upper_lines)
 		gate_mask=cv2.dilate(gate_mask, np.ones((5,5),np.uint8), iterations=3)
-		gate_mask=cv2.erode(gate_mask, np.ones((7,7),np.uint8))
+		#gate_mask=cv2.erode(gate_mask, np.ones((9,9),np.uint8))
 		return gate_mask
 
 	def GetGate(self):

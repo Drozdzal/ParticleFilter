@@ -1605,7 +1605,7 @@ PROTO Melman [
                       Camera {
 						rotation 0 0 -1 3.14
                         name "camera"
-                        fieldOfView 0.56
+                        fieldOfView 1
                         width 400
                         height 400
                         recognition Recognition {

@@ -47,20 +47,33 @@ class Shape:
             line.b = transformation * line.b
 
 
-def pitch_factory(length=90, width=60, goal_width=20, goal_height=10, radius=10, samples=16) -> Shape:
+def pitch_factory(length=9000, width=6000, goal_width=1500, goal_height=750, penalty_width=2000, penalty_depth=500, radius=750, samples=16) -> Shape:
     color = (255, 255, 255)
     lines = [
+        # borders
         Line([-width / 2, length / 2, 0, 1], [width / 2, length / 2, 0, 1], color),
         Line([width / 2, length / 2, 0, 1], [width / 2, -length / 2, 0, 1], color),
         Line([width / 2, -length / 2, 0, 1], [-width / 2, -length / 2, 0, 1], color),
         Line([-width / 2, -length / 2, 0, 1], [-width / 2, length / 2, 0, 1], color),
+        # middle
         Line([-width / 2, 0, 0, 1], [width / 2, 0, 0, 1], color),
+        # goals
         Line([-goal_width / 2, length / 2, goal_height, 1], [goal_width / 2, length / 2, goal_height, 1], color),
         Line([-goal_width / 2, -length / 2, goal_height, 1], [goal_width / 2, -length / 2, goal_height, 1], color),
         Line([-goal_width / 2, length / 2, 0, 1], [-goal_width / 2, length / 2, goal_height, 1], color),
         Line([goal_width / 2, length / 2, 0, 1], [goal_width / 2, length / 2, goal_height, 1], color),
         Line([-goal_width / 2, -length / 2, 0, 1], [-goal_width / 2, -length / 2, goal_height, 1], color),
         Line([goal_width / 2, -length / 2, 0, 1], [goal_width / 2, -length / 2, goal_height, 1], color),
+        # panelty areas
+        Line([-penalty_width / 2, length / 2, 0, 1], [-penalty_width / 2, length / 2 - penalty_depth, 0, 1], color),
+        Line([-penalty_width / 2, length / 2 - penalty_depth, 0, 1],
+             [penalty_width / 2, length / 2 - penalty_depth, 0, 1], color),
+        Line([penalty_width / 2, length / 2, 0, 1], [penalty_width / 2, length / 2 - penalty_depth, 0, 1], color),
+
+        Line([-penalty_width / 2, -length / 2, 0, 1], [-penalty_width / 2, -length / 2 + penalty_depth, 0, 1], color),
+        Line([-penalty_width / 2, -length / 2 + penalty_depth, 0, 1],
+             [penalty_width / 2, -length / 2 + penalty_depth, 0, 1], color),
+        Line([penalty_width / 2, -length / 2, 0, 1], [penalty_width / 2, -length / 2 + penalty_depth, 0, 1], color)
     ]
     angles = list(np.linspace(0, 2 * np.pi, samples + 1))
     points = [[radius * np.cos(angle), radius * np.sin(angle), 0, 1] for angle in angles]

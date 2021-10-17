@@ -9,7 +9,7 @@ from transformations import translation, rotation_x, rotation_y, rotation_z
 
 
 class Camera:
-    def __init__(self, f=100):
+    def __init__(self, f=150):
         self.f = f
         self.pose = np.eye(4)
         self.inv_pose = np.eye(4)

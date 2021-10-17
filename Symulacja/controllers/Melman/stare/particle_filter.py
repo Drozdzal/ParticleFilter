@@ -22,7 +22,6 @@ class ActionParams:
         self.rotation_mean = rotation_mean
         self.rotation_deviation = rotation_deviation
 
-
 class ClusterManager:
     class DimensionConfig:
         def __init__(self, min, max, subdivs, is_cyclic=False):
@@ -83,66 +82,23 @@ class ClusterManager:
         mean_state['particles in cluster'] = len(best_cluster)
         return mean_state
 
-
 class ParticleFilter:
     def __init__(self,
                  starting_particle: Particle,
                  environment: Shape,
                  particle_count: int = 1000,
-                 render_resolution=(400, 400)
-                 ):
+                 render_resolution=(400, 400)):
         self.environment = environment
         self.particle_count = particle_count
         self.particles = [starting_particle.copy() for i in range(particle_count)]
         self.theoretical_observations = np.zeros((particle_count, render_resolution[0], render_resolution[1], 3), dtype=np.uint8)
         self.best_particle = None
-        self.cluster_manager = ClusterManager()
-
-    def normalize_state(self, state):
-        """
-        Maps each state variable into 0-1 range
-        :param state: Original state
-        :return:
-        """
-        mapped = state - np.array([conf.min for conf in self.cluster_manager.dimensions.values()])
-        return mapped / np.array([conf.max - conf.min for conf in self.cluster_manager.dimensions.values()])
-
-    def iterative_densest(self, starting_point=None, iters=100):
-        if starting_point is None:
-            starting_point = starting_point or np.array([self.cluster_manager.get_best_estimate()[dim_name] for dim_name in self.cluster_manager.dimensions.keys()])
-        points = np.array([list(particle.get_state().values()) for particle in self.particles])
-        # normalization
-        points = self.normalize_state(points)
-        starting_point = self.normalize_state(starting_point)
-        best_state = starting_point
-        particle_distance = (1/self.cluster_manager.get_cluster_count()/len(self.cluster_manager.clusters[self.cluster_manager.best_cluster_idx]))**(1/3)
-        print(particle_distance)
-        std = particle_distance * 5
-        for iteration in range(iters):
-            differences = points - best_state
-            differences[differences[:, 2] > 0.5, 2] = differences[differences[:, 2] > 0.5, 2] - 1
-            differences[differences[:, 2] < -0.5, 2] = differences[differences[:, 2] < -0.5, 2] + 1
-            distances = np.sum(differences ** 2, 1)
-            gauss_values = np.exp(-distances / std / std)
-            gradient = (differences.T * gauss_values).T
-            best_state = best_state + np.mean(gradient, 0)
-            pass
-        print(f'iterative best state: {best_state * np.array([conf.max - conf.min for conf in self.cluster_manager.dimensions.values()]) + np.array([conf.min for conf in self.cluster_manager.dimensions.values()])}')
-        return best_state
-
-    def update_clusters(self):
-        self.cluster_manager.clear()
-        for particle in self.particles:
-            self.cluster_manager.add_particle(particle)
 
     def update_state(self, action: str):
         self.theoretical_observations *= 0
-        self.cluster_manager.clear()
         for idx, particle in enumerate(self.particles):
             particle.update(action)
-            self.cluster_manager.add_particle(particle)
             particle.camera.render(self.environment).draw(self.theoretical_observations[idx, :, :], dir2color=True)
-        print(self.cluster_manager.get_best_estimate())
 
     def update_observation(self, observation: np.array, alpha=1):
         cv2.imshow('current real observation', observation)
@@ -172,7 +128,7 @@ class ParticleFilter:
 
     def visualize(self):
         camera = Camera(f=500)
-        camera.pose = camera.pose.dot(translation([0, 0, 11000]))
+        camera.pose = camera.pose.dot(translation([0, 0, 110]))
         camera.pose = camera.pose.dot(rotation_x(math.pi))
         camera.inv_pose = np.linalg.inv(camera.pose)
 
