@@ -51,7 +51,7 @@ if __name__ == '__main__':
     particles = [Particle([X[i], Y[i]], yaws[i], translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - 0.5))) for i in range(particle_count)]
     pf.particles = particles
     pf.particles[0] = Particle([0, -20], 0, translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - 0.5)))
-
+    # pf.particles = []
     iteration = 0
     print(pf.cluster_manager.get_cluster_count())
     while (1):
