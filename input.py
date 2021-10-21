@@ -25,3 +25,41 @@ def prepare_observation(observation_shape: Shape, target_res=(200, 200)):
     img = np.zeros((target_res[0], target_res[1], 3), dtype=np.uint8)
     observation_shape.draw(img, dir2color=True)
     return img
+
+def blur(img, size):
+    return cv2.GaussianBlur(img, size, cv2.BORDER_DEFAULT)
+
+
+def prepare_observation2(observation_image: Shape, target_res=(200, 200)):
+    lower_lines = np.array([0, 0, 208])  # od 8 juz opornie
+    upper_lines = np.array([179, 255, 255])
+
+    green_lower = np.array([50, 122, 104])
+    green_upper = np.array([70, 162, 255])
+    # return observation_image
+    imgHSV = cv2.cvtColor(observation_image, cv2.COLOR_BGR2HSV)  # do hsv
+    green_mask = cv2.inRange(imgHSV, green_lower, green_upper)
+    kernel = np.ones((15, 15), np.uint8)
+    green_mask = cv2.dilate(green_mask, kernel, iterations=1)
+    green_mask = cv2.erode(green_mask, kernel, iterations=1)
+    gate_mask = cv2.inRange(imgHSV, lower_lines, upper_lines)
+    gate_mask = cv2.bitwise_and(gate_mask, green_mask)
+    edges = cv2.Canny(gate_mask, 150, 300)
+    lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi * 0.5 / 180, threshold=10, minLineLength=20,
+                            maxLineGap=10)
+    img = gate_mask * 0
+    shape_lines = []
+    for line in lines:
+        [[x1, y1, x2, y2]] = line
+        cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 1)
+        shape_lines.append(Line([x1, y1], [x2, y2], (255, 255, 255)))
+    shape = Shape(shape_lines)
+    scale_transformation = np.eye(2) * target_res[0]/img.shape[0]
+    shape.transform(scale_transformation)
+    img2 = np.zeros((target_res[0], target_res[1], 3), dtype=np.uint8)
+    shape.draw_raw(img2, True)
+    img2 = blur(img2, (15, 15))
+    img2 = img2 / img2.max() * 255
+    img2 = np.array(img2, dtype=np.uint8)
+
+    return img2

@@ -22,6 +22,14 @@ class Camera:
             new_line = self.project_line(line, inv_pose)
             if new_line is not None:
                 result.lines.append(new_line)
+
+        for polygon in shape.polygons:
+            new_polygon = []
+            for line in polygon:
+                new_line = self.project_line(line, inv_pose)
+                if new_line is not None:
+                    new_polygon.append(new_line)
+            result.polygons.append(new_polygon)
         return result
 
     def project_line(self,
