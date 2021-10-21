@@ -47,13 +47,13 @@ ACTIONS = {
 
 
 class Particle:
-    def __init__(self, position, yaw, camera_transformation: np.array = None):
+    def __init__(self, position, yaw, camera_transformation: np.array = None, f=None):
         self.camera = None
         self.position = np.array(position)
         self.yaw = yaw
         self.camera_transformation = camera_transformation
         if camera_transformation is not None:
-            self.update_camera()
+            self.update_camera(f)
         self.probability = None
         self.window_min = None
         self.window_max = None

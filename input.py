@@ -26,6 +26,7 @@ def prepare_observation(observation_shape: Shape, target_res=(200, 200)):
     observation_shape.draw(img, dir2color=True)
     return img
 
+
 def blur(img, size):
     return cv2.GaussianBlur(img, size, cv2.BORDER_DEFAULT)
 
@@ -61,5 +62,20 @@ def prepare_observation2(observation_image: Shape, target_res=(200, 200)):
     img2 = blur(img2, (15, 15))
     img2 = img2 / img2.max() * 255
     img2 = np.array(img2, dtype=np.uint8)
+    goal = detect_goal(observation_image)
+    goal_mask = cv2.inRange(goal, 45, 255)
+    goal_mask = cv2.dilate(goal_mask, kernel, iterations=1)
+    goal_mask = cv2.erode(goal_mask, kernel, iterations=1)
+    goals_colored = np.zeros((target_res[0], target_res[1], 3), dtype=np.uint8)
+    goals_colored[:, :, 2] = cv2.resize(goal_mask, target_res)
+    return img2 + goals_colored
 
-    return img2
+def detect_goal(image, kernel_size=5):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    kernel = -np.ones((kernel_size, kernel_size), dtype=np.float32)
+    positive_elements_count = 2*kernel_size - 1
+    positive_value = (kernel_size ** 2 - positive_elements_count)/positive_elements_count
+    for i in range(kernel_size):
+        kernel[(kernel_size-1) // 2, i] = positive_value
+        kernel[i, (kernel_size - 1) // 2] = positive_value
+    return cv2.filter2D(image, -1, kernel/kernel_size/kernel_size)
