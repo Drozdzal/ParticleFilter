@@ -211,7 +211,7 @@ class ParticleFilter:
         if self.real_state is not None:
             particle_shape = camera.render(self.real_state.get_shape(color=(0, 0, 255)))
             particle_shape.draw(image)
-            particle_shape.lines[0].draw_a(image, color=(0, 0, 50))
+            particle_shape.lines[0].draw_a(image, color=(0, 0, 255))
         if filename is not None:
             cv2.imwrite(filename, image)
         if show:
