@@ -39,7 +39,7 @@ class Line:
         width = img.shape[1]
         height = img.shape[0]
         p1 = (int(self.a[0]) + width // 2, height // 2 + int(self.a[1]))
-        color = color or (255, 0, 0)
+        color = color or self.color
         cv2.circle(img, p1, 0, color,2)
 
     def draw_raw(self, img, dir2color=False):

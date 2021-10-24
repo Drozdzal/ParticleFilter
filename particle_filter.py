@@ -109,7 +109,8 @@ class ParticleFilter:
             self.general_results_writer = csv.writer(general_results_file)
             self.general_results_writer.writerow(['real_x', 'real_y', 'real_yaw',
                                                   'cluster_x', 'cluster_y', 'cluster_yaw',
-                                                  'densest_x', 'densest_y', 'densest_yaw'])
+                                                  'densest_x', 'densest_y', 'densest_yaw',
+                                                  'std_x', 'std_y', 'std_yaw'])
         if particle_details_file is not None:
             self.detailed_results_writer = csv.writer(particle_details_file)
             columns = []
@@ -204,6 +205,7 @@ class ParticleFilter:
         self.environment.polygons = []
         camera.render(self.environment).draw(image, color=(128, 128, 128))
         self.environment.polygons = polys
+
         for particle in self.particles:
             particle_shape = camera.render(particle.get_shape())
             particle_shape.draw(image)
@@ -212,6 +214,14 @@ class ParticleFilter:
             particle_shape = camera.render(self.real_state.get_shape(color=(0, 0, 255)))
             particle_shape.draw(image)
             particle_shape.lines[0].draw_a(image, color=(0, 0, 255))
+        best_estimate = self.iterative_densest()
+        print(best_estimate)
+        best_estimate_particle = Particle([best_estimate[0:2]], best_estimate[2],
+                                          translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
+                                          f=80)
+        best_estimate_particle_shape = camera.render(best_estimate_particle.get_shape(color=(200, 0, 0)))
+        best_estimate_particle_shape.draw(image)
+        best_estimate_particle_shape.lines[0].draw_a(image, color=(200, 0, 0))
         if filename is not None:
             cv2.imwrite(filename, image)
         if show:
@@ -219,18 +229,26 @@ class ParticleFilter:
             cv2.waitKey(0)
 
     def save(self):
-        if self.general_results_writer is not None:
-            real_pos = self.real_state.get_state()
-            cluster_estimate = self.cluster_manager.get_best_estimate()
-            densest_estimate = self.iterative_densest()
-            self.general_results_writer.writerow([
-                real_pos['x'], real_pos['y'], real_pos['yaw'],
-                cluster_estimate['x'], cluster_estimate['y'], cluster_estimate['yaw'],
-                densest_estimate[0], densest_estimate[1], densest_estimate[2],
-            ])
+        real_pos = self.real_state.get_state()
+        cluster_estimate = self.cluster_manager.get_best_estimate()
+        densest_estimate = self.iterative_densest()
+        std_pos_x = 0
+        std_pos_y = 0
+        std_yaw = 0
         if self.detailed_results_writer is not None:
             row = []
             for particle in self.particles:
                 particle_state = particle.get_state()
                 row = row + [particle_state['x'], particle_state['y'], particle_state['yaw']]
+                std_pos_x += (particle_state['x'] - densest_estimate[0]) ** 2
+                std_pos_y += (particle_state['y'] - densest_estimate[1]) ** 2
+                std_yaw += (particle_state['yaw'] - densest_estimate[2]) ** 2
             self.detailed_results_writer.writerow(row)
+        if self.general_results_writer is not None:
+
+            self.general_results_writer.writerow([
+                real_pos['x'], real_pos['y'], real_pos['yaw'],
+                cluster_estimate['x'], cluster_estimate['y'], cluster_estimate['yaw'],
+                densest_estimate[0], densest_estimate[1], densest_estimate[2],
+                std_pos_x ** 0.5, std_pos_y ** 0.5, std_yaw ** 0.5
+            ])
