@@ -115,7 +115,7 @@ class ParticleFilter:
             columns = []
             for i in range(particle_count):
                 columns += [f'p{i}_x', f'p{i}_y', f'p{i}_yaw']
-            self.general_results_writer.writerow(columns)
+            self.detailed_results_writer.writerow(columns)
 
     def normalize_state(self, state):
         """
@@ -211,6 +211,7 @@ class ParticleFilter:
         if self.real_state is not None:
             particle_shape = camera.render(self.real_state.get_shape(color=(0, 0, 255)))
             particle_shape.draw(image)
+            particle_shape.lines[0].draw_a(image, color=(0, 0, 50))
         if filename is not None:
             cv2.imwrite(filename, image)
         if show:

@@ -23,7 +23,7 @@ def get_rpy(axis_angle_rotation):
 
 if __name__ == '__main__':
     pitch = Pitch()
-    particle_count = 200
+    particle_count = 400
     np.random.seed(0)
     files = os.listdir('./data_30')
     files = [file for file in files if file.endswith('.jpg')]
@@ -56,7 +56,7 @@ if __name__ == '__main__':
             pf.cluster_manager.add_dimension('x', min=-3000, max=3000, subdivs=30)
             pf.cluster_manager.add_dimension('y', min=-4500, max=4500, subdivs=45)
             pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
-            for file in files:
+            for file in files[:500]:
                 file_idx = int(file[:-4])
                 print(file_idx)
                 position = positions[file_idx + 1]
