@@ -40,74 +40,76 @@ if __name__ == '__main__':
                 rotation[2] = rotation[2] - 2 * math.pi
         positions = [[float(r) for r in row] for row in translation_reader]
         positions = [[-1000 * pos[2], 1000 * pos[0]] for pos in positions]
-
-        # EXPERIMENT WITH NO FEEDBACK
-        init_position = positions[1]
-        init_rotation = rotations[1]
-        init_particle = Particle(init_position,
-                                 0,
-                                 translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
-                                 f=80)
-        with open('output/no_feedback/general_results.csv', 'w', newline='') as general_csv, \
-                open('output/no_feedback/particle_details.csv', 'w', newline='') as particles_csv:
-            pf = ParticleFilter(init_particle, pitch, particle_count,
-                                general_results_file=general_csv,
-                                particle_details_file=particles_csv)
-            pf.cluster_manager.add_dimension('x', min=-3000, max=3000, subdivs=30)
-            pf.cluster_manager.add_dimension('y', min=-4500, max=4500, subdivs=45)
-            pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
-            for file in files[:500]:
-                file_idx = int(file[:-4])
-                print(file_idx)
-                position = positions[file_idx + 1]
-                rotation = rotations[file_idx + 1]
-                action = actions[file_idx]
-                # img = cv2.imread(f"./data_30/{file}")
-                # cv2.imshow('raw_obs', cv2.resize(img, (200, 200)))
-                # img = prepare_observation2(img)
-                # pf.visualize()
-                real_particle = Particle(position,
-                                         rotation[2],
-                                         translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
-                                         f=80)
-                pf.update_state(action, real_state=real_particle, render=False)
-                pf.visualize(filename=f'./output/no_feedback/viz/{file_idx}.png', show=False)
-                pf.save()
-                # pf.update_observation(img)
-                # pf.iterative_densest()
-
-
-        # # EXPERIMENT WITH FEEDBACK
-        # particle_count = 500
+        #
+        # # EXPERIMENT WITH NO FEEDBACK
         # init_position = positions[1]
         # init_rotation = rotations[1]
         # init_particle = Particle(init_position,
         #                          0,
         #                          translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
         #                          f=80)
-        # with open('output/with_feedback/general_results', 'w', newline='') as general_csv, \
-        #         open('output/with_feedback/particle_details', 'w', newline='') as particles_csv:
+        # with open('output/no_feedback/general_results.csv', 'w', newline='') as general_csv, \
+        #         open('output/no_feedback/particle_details.csv', 'w', newline='') as particles_csv:
         #     pf = ParticleFilter(init_particle, pitch, particle_count,
         #                         general_results_file=general_csv,
         #                         particle_details_file=particles_csv)
         #     pf.cluster_manager.add_dimension('x', min=-3000, max=3000, subdivs=30)
         #     pf.cluster_manager.add_dimension('y', min=-4500, max=4500, subdivs=45)
         #     pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
-        #
-        #     for file in files:
+        #     for file in files[:500]:
         #         file_idx = int(file[:-4])
+        #         print(file_idx)
         #         position = positions[file_idx + 1]
         #         rotation = rotations[file_idx + 1]
         #         action = actions[file_idx]
-        #         img = cv2.imread(f"./data_30/{file}")
-        #         cv2.imshow('raw_obs', cv2.resize(img, (200, 200)))
-        #         img = prepare_observation2(img)
-        #         pf.visualize()
+        #         # img = cv2.imread(f"./data_30/{file}")
+        #         # cv2.imshow('raw_obs', cv2.resize(img, (200, 200)))
+        #         # img = prepare_observation2(img)
+        #         # pf.visualize()
         #         real_particle = Particle(position,
         #                                  rotation[2],
         #                                  translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
         #                                  f=80)
-        #         pf.update_state(action, real_state=real_particle)
-        #         pf.visualize(filename=f'./output/with_feedback/{file_idx}.png')
-        #         pf.update_observation(img)
-        #         pf.iterative_densest()
+        #         pf.update_state(action, real_state=real_particle, render=False)
+        #         pf.visualize(filename=f'./output/no_feedback/viz/{file_idx}.png', show=False)
+        #         pf.save()
+        #         # pf.update_observation(img)
+        #         # pf.iterative_densest()
+
+
+        # EXPERIMENT WITH FEEDBACK
+        particle_count = 500
+        init_position = positions[1]
+        init_rotation = rotations[1]
+        init_particle = Particle(init_position,
+                                 0,
+                                 translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
+                                 f=80)
+        with open('output/with_feedback/general_results', 'w', newline='') as general_csv, \
+                open('output/with_feedback/particle_details', 'w', newline='') as particles_csv:
+            pf = ParticleFilter(init_particle, pitch, particle_count,
+                                general_results_file=general_csv,
+                                particle_details_file=particles_csv)
+            pf.cluster_manager.add_dimension('x', min=-3000, max=3000, subdivs=30)
+            pf.cluster_manager.add_dimension('y', min=-4500, max=4500, subdivs=45)
+            pf.cluster_manager.add_dimension('yaw', min=0, max=2 * np.pi, subdivs=36, is_cyclic=True)
+
+            for file in files[:1000]:
+                file_idx = int(file[:-4])
+                print(file_idx)
+                position = positions[file_idx + 1]
+                rotation = rotations[file_idx + 1]
+                action = actions[file_idx]
+                img = cv2.imread(f"./data_30/{file}")
+                # cv2.imshow('raw_obs', cv2.resize(img, (200, 200)))
+                img = prepare_observation2(img)
+                # pf.visualize()
+                real_particle = Particle(position,
+                                         rotation[2],
+                                         translation([0, 0, 500]).dot(rotation_x(- math.pi / 2 - math.pi / 6)),
+                                         f=80)
+                pf.update_state(action, real_state=real_particle)
+                pf.visualize(filename=f'./output/with_feedback/viz/{file_idx}.png', show=False)
+                pf.update_observation(img)
+                pf.save()
+                # pf.iterative_densest()

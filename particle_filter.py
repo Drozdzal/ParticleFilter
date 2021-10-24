@@ -190,8 +190,8 @@ class ParticleFilter:
                 pointer += 1/self.particle_count
                 resampled.append(particle.copy())
         self.particles = resampled[0:self.particle_count]
-        cv2.imshow('best particle observation', self.theoretical_observations[best_idx])
-        cv2.imshow('matching regions', np.array(dot_product[best_idx], dtype=np.float)/dot_product[best_idx].max())
+        # cv2.imshow('best particle observation', self.theoretical_observations[best_idx])
+        # cv2.imshow('matching regions', np.array(dot_product[best_idx], dtype=np.float)/dot_product[best_idx].max())
 
     def visualize(self, filename=None, show=True):
         camera = Camera(f=500)
