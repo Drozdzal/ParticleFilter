@@ -41,7 +41,21 @@ ACTIONS = {
     'noop': ActionParams(translation_mean=[0, 0],
                          translation_deviation=[100, 100],
                          rotation_mean=0,
-                         rotation_deviation=0.1)
+                         rotation_deviation=0.1),
+
+    'real_forward': ActionParams(translation_mean=[0, 60],
+                                 translation_deviation=[3, 3],
+                                 rotation_mean=0,
+                                 rotation_deviation=0.004),
+
+    'real_left': ActionParams(translation_mean=[0, 0],
+                              translation_deviation=[20, 20],
+                              rotation_mean=1.649,
+                              rotation_deviation=0.123),
+    'real_right': ActionParams(translation_mean=[0, 0],
+                               translation_deviation=[20, 20],
+                               rotation_mean=-1.649,
+                               rotation_deviation=0.123),
 
 }
 
@@ -78,7 +92,7 @@ class Particle:
         self.position = self.get_robot_pose().dot(np.append(robot_translation, [0, 1]))[0:2]
         # global rotation matrix
         self.yaw += np.random.normal(action.rotation_mean, action.rotation_deviation)
-        self.yaw -= (self.yaw//(2*np.pi)) * (2*np.pi)
+        self.yaw -= (self.yaw // (2 * np.pi)) * (2 * np.pi)
         self.update_camera()
 
     def copy(self):
@@ -91,7 +105,7 @@ class Particle:
             particle.camera = camera
         return particle
 
-    def get_shape(self, color=(255, 0, 0)):
+    def get_shape(self, color=(0, 255, 0)):
         start = self.camera.pose[0:4, 3]
         end = self.camera.get_robot_pose().dot(np.array([0, 500, 0, 1]))
         return Shape([Line(start, end, color)])

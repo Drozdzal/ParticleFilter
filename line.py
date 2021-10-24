@@ -16,9 +16,9 @@ class Line:
             self.coordinates = np.array([self.a, self.b]).transpose()
         return self.coordinates
 
-    def draw(self, img, dir2color=False):
-        width = img.shape[0]
-        height = img.shape[1]
+    def draw(self, img, dir2color=False, color=None):
+        width = img.shape[1]
+        height = img.shape[0]
         p1 = (int(self.a[0]) + width // 2, height // 2 + int(self.a[1]))
         p2 = (int(self.b[0]) + width // 2, height // 2 + int(self.b[1]))
         if dir2color:
@@ -30,10 +30,17 @@ class Line:
                      int(abs(vector[1] / vector_length) * 255),
                      0)
         else:
-            color = self.color
+            color = color or self.color
         cv2.line(img, p1, p2, color)
         # cv2.circle(img, p1, 2, (0,0,255))
         # cv2.circle(img, p2, 5, (0, 0, 255))
+
+    def draw_a(self, img, color=None):
+        width = img.shape[1]
+        height = img.shape[0]
+        p1 = (int(self.a[0]) + width // 2, height // 2 + int(self.a[1]))
+        color = color or (255, 0, 0)
+        cv2.circle(img, p1, 0, color,2)
 
     def draw_raw(self, img, dir2color=False):
         p1 = (int(self.a[0]), int(self.a[1]))

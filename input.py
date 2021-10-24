@@ -63,12 +63,17 @@ def prepare_observation2(observation_image: Shape, target_res=(200, 200)):
     img2 = img2 / img2.max() * 255
     img2 = np.array(img2, dtype=np.uint8)
     goal = detect_goal(observation_image)
-    goal_mask = cv2.inRange(goal, 45, 255)
-    goal_mask = cv2.dilate(goal_mask, kernel, iterations=1)
-    goal_mask = cv2.erode(goal_mask, kernel, iterations=1)
+    # return goal
+    goal_mask = cv2.inRange(goal, 46, 999)
+
+    kernel = np.ones((55, 55), np.uint8)
+    goal_mask = cv2.dilate(goal_mask, kernel, iterations=4)
+    goal_mask = cv2.erode(goal_mask, kernel, iterations=4)
+    # return goal_mask
     goals_colored = np.zeros((target_res[0], target_res[1], 3), dtype=np.uint8)
     goals_colored[:, :, 2] = cv2.resize(goal_mask, target_res)
     return img2 + goals_colored
+
 
 def detect_goal(image, kernel_size=5):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

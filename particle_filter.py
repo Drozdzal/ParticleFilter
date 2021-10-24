@@ -1,5 +1,7 @@
+import csv
 import math
 from collections import OrderedDict
+from typing import Optional
 
 import cv2
 
@@ -89,7 +91,9 @@ class ParticleFilter:
                  starting_particle: Particle,
                  environment: Shape,
                  particle_count: int = 1000,
-                 render_resolution=(200, 200)
+                 render_resolution=(200, 200),
+                 general_results_file=None,
+                 particle_details_file=None
                  ):
         self.environment = environment
         self.particle_count = particle_count
@@ -97,6 +101,21 @@ class ParticleFilter:
         self.theoretical_observations = np.zeros((particle_count, render_resolution[0], render_resolution[1], 3), dtype=np.uint8)
         self.best_particle = None
         self.cluster_manager = ClusterManager()
+        self.real_state = None
+
+        self.general_results_writer = None
+        self.detailed_results_writer = None
+        if general_results_file is not None:
+            self.general_results_writer = csv.writer(general_results_file)
+            self.general_results_writer.writerow(['real_x', 'real_y', 'real_yaw',
+                                                  'cluster_x', 'cluster_y', 'cluster_yaw',
+                                                  'densest_x', 'densest_y', 'densest_yaw'])
+        if particle_details_file is not None:
+            self.detailed_results_writer = csv.writer(particle_details_file)
+            columns = []
+            for i in range(particle_count):
+                columns += [f'p{i}_x', f'p{i}_y', f'p{i}_yaw']
+            self.general_results_writer.writerow(columns)
 
     def normalize_state(self, state):
         """
@@ -116,7 +135,6 @@ class ParticleFilter:
         starting_point = self.normalize_state(starting_point)
         best_state = starting_point
         particle_distance = (1/self.cluster_manager.get_cluster_count()/len(self.cluster_manager.clusters[self.cluster_manager.best_cluster_idx]))**(1/3)
-        print(particle_distance)
         std = particle_distance * 5
         for iteration in range(iters):
             differences = points - best_state
@@ -127,25 +145,29 @@ class ParticleFilter:
             gradient = (differences.T * gauss_values).T
             best_state = best_state + np.mean(gradient, 0)
             pass
-        print(f'iterative best state: {best_state * np.array([conf.max - conf.min for conf in self.cluster_manager.dimensions.values()]) + np.array([conf.min for conf in self.cluster_manager.dimensions.values()])}')
-        return best_state
+        # print(f'iterative best state: {best_state * np.array([conf.max - conf.min for conf in self.cluster_manager.dimensions.values()]) + np.array([conf.min for conf in self.cluster_manager.dimensions.values()])}')
+        return best_state * np.array([conf.max - conf.min for conf in self.cluster_manager.dimensions.values()]) + \
+                np.array([conf.min for conf in self.cluster_manager.dimensions.values()])
 
     def update_clusters(self):
         self.cluster_manager.clear()
         for particle in self.particles:
             self.cluster_manager.add_particle(particle)
 
-    def update_state(self, action: str):
+    def update_state(self, action: str, real_state=None, render=True):
+        self.real_state = real_state
         self.theoretical_observations *= 0
         self.cluster_manager.clear()
         for idx, particle in enumerate(self.particles):
             particle.update(action)
             self.cluster_manager.add_particle(particle)
-            particle.camera.render(self.environment).draw(self.theoretical_observations[idx, :, :], dir2color=True)
-        print(self.cluster_manager.get_best_estimate())
+            if render:
+                particle.camera.render(self.environment).draw(self.theoretical_observations[idx, :, :], dir2color=True)
+        # print(self.cluster_manager.get_best_estimate())
 
-    def update_observation(self, observation: np.array, alpha=1):
+    def update_observation(self, observation: Optional[np.array] = None, alpha=1):
         cv2.imshow('current real observation', observation)
+        observation = np.array(observation, dtype=np.uint64)
         dot_product = np.sum(np.multiply(self.theoretical_observations, observation), 3)
         probabilities = np.sum(np.sum(dot_product, 2), 1)
         # probabilities = np.sum(np.abs(probabilities ** 2), axis=-1)**(1/2)
@@ -169,19 +191,45 @@ class ParticleFilter:
                 resampled.append(particle.copy())
         self.particles = resampled[0:self.particle_count]
         cv2.imshow('best particle observation', self.theoretical_observations[best_idx])
+        cv2.imshow('matching regions', np.array(dot_product[best_idx], dtype=np.float)/dot_product[best_idx].max())
 
-    def visualize(self):
+    def visualize(self, filename=None, show=True):
         camera = Camera(f=500)
         camera.pose = camera.pose.dot(translation([0, 0, 11000]))
         camera.pose = camera.pose.dot(rotation_x(math.pi))
         camera.inv_pose = np.linalg.inv(camera.pose)
 
-        image = np.zeros((500, 500, 3))
-        camera.render(self.environment).draw(image)
+        image = np.ones((500, 400, 3), dtype=np.uint8) * 255
+        polys = self.environment.polygons
+        self.environment.polygons = []
+        camera.render(self.environment).draw(image, color=(128, 128, 128))
+        self.environment.polygons = polys
         for particle in self.particles:
-            camera.render(particle.get_shape()).draw(image)
-        if self.best_particle is not None:
-            camera.render(self.best_particle.get_shape(color=(0, 0, 255))).draw(image)
-        cv2.imwrite('test.png', image)
-        cv2.imshow('visualization', image)
-        cv2.waitKey(0)
+            particle_shape = camera.render(particle.get_shape())
+            particle_shape.draw(image)
+            particle_shape.lines[0].draw_a(image)
+        if self.real_state is not None:
+            particle_shape = camera.render(self.real_state.get_shape(color=(0, 0, 255)))
+            particle_shape.draw(image)
+        if filename is not None:
+            cv2.imwrite(filename, image)
+        if show:
+            cv2.imshow('visualization', image)
+            cv2.waitKey(0)
+
+    def save(self):
+        if self.general_results_writer is not None:
+            real_pos = self.real_state.get_state()
+            cluster_estimate = self.cluster_manager.get_best_estimate()
+            densest_estimate = self.iterative_densest()
+            self.general_results_writer.writerow([
+                real_pos['x'], real_pos['y'], real_pos['yaw'],
+                cluster_estimate['x'], cluster_estimate['y'], cluster_estimate['yaw'],
+                densest_estimate[0], densest_estimate[1], densest_estimate[2],
+            ])
+        if self.detailed_results_writer is not None:
+            row = []
+            for particle in self.particles:
+                particle_state = particle.get_state()
+                row = row + [particle_state['x'], particle_state['y'], particle_state['yaw']]
+            self.detailed_results_writer.writerow(row)

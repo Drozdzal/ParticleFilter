@@ -11,11 +11,11 @@ class Shape:
         self.lines = lines
         self.polygons = []
 
-    def draw(self, img, dir2color=False):
+    def draw(self, img, dir2color=False, color=None):
         for line in self.lines:
-            line.draw(img, dir2color)
-        width = img.shape[0]
-        height = img.shape[1]
+            line.draw(img, dir2color, color)
+        width = img.shape[1]
+        height = img.shape[0]
         for polygon in self.polygons:
             if len(polygon) < 2:
                 continue
@@ -25,7 +25,7 @@ class Shape:
                 points.append((int(line.b[0]) + width // 2, height // 2 + int(line.b[1])))
             points = np.array([points])
             # points = [(int(line.a[0]) + width // 2, height // 2 + int(line.a[1])) for line in polygon]
-            cv2.fillPoly(img, points, (0, 0, 255))
+            cv2.fillPoly(img, points, (0, 0, 64))
 
     def draw_raw(self, img, dir2color=False):
         for line in self.lines:
@@ -168,8 +168,8 @@ class Pitch(Shape):
             pass
             lines.append(Line(p1, p2, color))
         self.lines = lines
-        self.subdivide()
-        self.stroke(50)
+        # self.subdivide()
+        # self.stroke(50)
         goals = [
             # GOALS
             # inside
@@ -180,21 +180,21 @@ class Pitch(Shape):
             Line([-goal_width / 2, -length / 2, 0, 1], [-goal_width / 2, -length / 2, goal_height, 1], color),
             Line([goal_width / 2, -length / 2, 0, 1], [goal_width / 2, -length / 2, goal_height, 1], color),
             # outside
-            Line([-goal_width_outside / 2, length / 2, goal_height_outside, 1],
-                 [goal_width_outside / 2, length / 2, goal_height_outside, 1], color),
-            Line([-goal_width_outside / 2, -length / 2, goal_height_outside, 1],
-                 [goal_width_outside / 2, -length / 2, goal_height_outside, 1], color),
-            Line([-goal_width_outside / 2, length / 2, 0, 1],
-                 [-goal_width_outside / 2, length / 2, goal_height_outside, 1],
-                 color),
-            Line([goal_width_outside / 2, length / 2, 0, 1],
-                 [goal_width_outside / 2, length / 2, goal_height_outside, 1],
-                 color),
-            Line([-goal_width_outside / 2, -length / 2, 0, 1],
-                 [-goal_width_outside / 2, -length / 2, goal_height_outside, 1], color),
-            Line([goal_width_outside / 2, -length / 2, 0, 1],
-                 [goal_width_outside / 2, -length / 2, goal_height_outside, 1],
-                 color),
+            # Line([-goal_width_outside / 2, length / 2, goal_height_outside, 1],
+            #      [goal_width_outside / 2, length / 2, goal_height_outside, 1], color),
+            # Line([-goal_width_outside / 2, -length / 2, goal_height_outside, 1],
+            #      [goal_width_outside / 2, -length / 2, goal_height_outside, 1], color),
+            # Line([-goal_width_outside / 2, length / 2, 0, 1],
+            #      [-goal_width_outside / 2, length / 2, goal_height_outside, 1],
+            #      color),
+            # Line([goal_width_outside / 2, length / 2, 0, 1],
+            #      [goal_width_outside / 2, length / 2, goal_height_outside, 1],
+            #      color),
+            # Line([-goal_width_outside / 2, -length / 2, 0, 1],
+            #      [-goal_width_outside / 2, -length / 2, goal_height_outside, 1], color),
+            # Line([goal_width_outside / 2, -length / 2, 0, 1],
+            #      [goal_width_outside / 2, -length / 2, goal_height_outside, 1],
+            #      color),
         ]
         self.polygons.append([
             Line([-goal_width / 2, length / 2, goal_height, 1], [goal_width / 2, length / 2, goal_height, 1], color),
