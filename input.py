@@ -31,7 +31,7 @@ def blur(img, size):
     return cv2.GaussianBlur(img, size, cv2.BORDER_DEFAULT)
 
 
-def prepare_observation2(observation_image: Shape, target_res=(200, 200)):
+def prepare_observation2(observation_image, target_res=(200, 200)):
     lower_lines = np.array([0, 0, 208])  # od 8 juz opornie
     upper_lines = np.array([179, 255, 255])
 
@@ -47,13 +47,16 @@ def prepare_observation2(observation_image: Shape, target_res=(200, 200)):
     gate_mask = cv2.bitwise_and(gate_mask, green_mask)
     edges = cv2.Canny(gate_mask, 150, 300)
     lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi * 0.5 / 180, threshold=10, minLineLength=20,
-                            maxLineGap=10)
+                            maxLineGap=3)
     img = gate_mask * 0
     shape_lines = []
     for line in lines:
         [[x1, y1, x2, y2]] = line
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 1)
+        # cv2.line(observation_image, (x1, y1), (x2, y2), (0, 0, 255), 3)
         shape_lines.append(Line([x1, y1], [x2, y2], (255, 255, 255)))
+    cv2.imshow('nic', observation_image)
+    cv2.waitKey(0)
     shape = Shape(shape_lines)
     scale_transformation = np.eye(2) * target_res[0]/img.shape[0]
     shape.transform(scale_transformation)
@@ -63,15 +66,27 @@ def prepare_observation2(observation_image: Shape, target_res=(200, 200)):
     img2 = img2 / img2.max() * 255
     img2 = np.array(img2, dtype=np.uint8)
     goal = detect_goal(observation_image)
+
     # return goal
     goal_mask = cv2.inRange(goal, 46, 999)
 
     kernel = np.ones((55, 55), np.uint8)
     goal_mask = cv2.dilate(goal_mask, kernel, iterations=4)
     goal_mask = cv2.erode(goal_mask, kernel, iterations=4)
+    #
+    # goal_tmp = observation_image * 0
+    # goal_tmp[:,:,0] = goal_mask
+    # goal_tmp[:, :, 1] = goal_mask
+    # goal_tmp[:, :, 2] = goal_mask
+    # goal_mark = observation_image * 0
+    # goal_mark[:, :, 2] = goal_mask
+    # gc = observation_image
+    # cv2.imshow('nic', np.bitwise_and(gc, np.bitwise_not(goal_tmp)) + goal_mark)
+    # cv2.waitKey(0)
     # return goal_mask
     goals_colored = np.zeros((target_res[0], target_res[1], 3), dtype=np.uint8)
     goals_colored[:, :, 2] = cv2.resize(goal_mask, target_res)
+
     return img2 + goals_colored
 
 
